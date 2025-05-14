@@ -43,7 +43,7 @@ function App() {
   return (
     <div className="app">
       <aside className="sidebar">
-        <h2>AutoScan</h2>
+        <h2>Menu</h2>
         <nav>
           <ul>
             <li
@@ -87,17 +87,6 @@ function App() {
               className="file-input"
             />
 
-            <div className="image-preview">
-              {images.map((image) => (
-                <img
-                  key={image.name}
-                  src={URL.createObjectURL(image)}
-                  alt="preview"
-                  className="preview"
-                />
-              ))}
-            </div>
-
             <button onClick={handleDetect} disabled={loading}>
               {loading ? 'Detecting...' : 'Detect Damage'}
             </button>
@@ -119,11 +108,11 @@ function App() {
         )}
 
         {activeMenu === 'History' && (
-          <h1>History (Coming Soon...)</h1>
+          <h1>History </h1>
         )}
 
         {activeMenu === 'Settings' && (
-          <h1>Settings (Coming Soon...)</h1>
+          <h1>Settings </h1>
         )}
       </main>
     </div>
