@@ -67,7 +67,7 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className="app" style={{ width: '90%', margin: '0 auto', maxWidth: '1400px' }}>
       <aside className="sidebar">
         <h2>Menu</h2>
         <nav>
@@ -150,18 +150,6 @@ function App() {
                     🔍 View Fullscreen
                   </button>
 
-                  <button 
-                    className="print-button"
-                    onClick={() => {
-                      const iframe = document.createElement('iframe');
-                      iframe.style.display = 'none';
-                      iframe.src = pdfBlobUrl;
-                      document.body.appendChild(iframe);
-                      iframe.contentWindow.print();
-                    }}
-                  >
-                    🖨️ Print Report
-                  </button>
                 </div>
               </div>
             ) : (
