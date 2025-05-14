@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Apply full-screen dark gradient background */
+body {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  color: white;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+input[type='file'] {
+  color: white !important;
+}
