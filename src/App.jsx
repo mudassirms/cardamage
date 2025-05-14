@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
   const [images, setImages] = useState([]);
-  const [results, setResults] = useState(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeMenu, setActiveMenu] = useState('New Detection');
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    const savedHistory = JSON.parse(localStorage.getItem('detectionHistory')) || [];
+    setHistory(savedHistory);
+  }, []);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setImages(files);
-    setResults(null);
+    setPdfBlobUrl(null);
   };
 
   const handleDetect = async () => {
@@ -30,14 +36,34 @@ function App() {
 
       if (!response.ok) throw new Error('Failed to get response from backend');
 
-      const data = await response.json();
-      setResults(data);
+      const blob = await response.blob();
+      const fileURL = URL.createObjectURL(blob);
+      setPdfBlobUrl(fileURL);
       setActiveMenu('Detection Report'); 
+
+      // Save to local storage for history
+      const newEntry = {
+        id: Date.now(),
+        date: new Date().toLocaleString(),
+        reportUrl: fileURL,
+      };
+      const updatedHistory = [newEntry, ...history];
+      setHistory(updatedHistory);
+      localStorage.setItem('detectionHistory', JSON.stringify(updatedHistory));
     } catch (error) {
       alert('Error detecting damage');
       console.error(error);
     }
     setLoading(false);
+  };
+
+  const handleViewReport = (url) => {
+    window.open(url, '_blank');
+  };
+
+  const handleClearHistory = () => {
+    localStorage.removeItem('detectionHistory');
+    setHistory([]);
   };
 
   return (
@@ -56,7 +82,7 @@ function App() {
               className={activeMenu === 'Detection Report' ? 'active' : ''}
               onClick={() => setActiveMenu('Detection Report')}
             >
-              📊 Detection Report
+              📄 Detection Report
             </li>
             <li
               className={activeMenu === 'History' ? 'active' : ''}
@@ -96,10 +122,47 @@ function App() {
         {activeMenu === 'Detection Report' && (
           <>
             <h1>Detection Report</h1>
-            {results ? (
-              <div className="results">
-                <h3>Results:</h3>
-                <pre>{JSON.stringify(results, null, 2)}</pre>
+            {pdfBlobUrl ? (
+              <div>
+                <iframe
+                  src={pdfBlobUrl}
+                  title="Detection Report"
+                  width="100%"
+                  height="600px"
+                />
+                <div className="button-group">
+                  <button 
+                    className="download-button" 
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = pdfBlobUrl;
+                      link.download = 'Detection_Report.pdf';
+                      link.click();
+                    }}
+                  >
+                    📥 Download Report
+                  </button>
+
+                  <button 
+                    className="view-fullscreen-button"
+                    onClick={() => window.open(pdfBlobUrl, '_blank')}
+                  >
+                    🔍 View Fullscreen
+                  </button>
+
+                  <button 
+                    className="print-button"
+                    onClick={() => {
+                      const iframe = document.createElement('iframe');
+                      iframe.style.display = 'none';
+                      iframe.src = pdfBlobUrl;
+                      document.body.appendChild(iframe);
+                      iframe.contentWindow.print();
+                    }}
+                  >
+                    🖨️ Print Report
+                  </button>
+                </div>
               </div>
             ) : (
               <p>No detection results to display.</p>
@@ -108,7 +171,26 @@ function App() {
         )}
 
         {activeMenu === 'History' && (
-          <h1>History </h1>
+          <>
+            <h1>History</h1>
+            <button className="clear-history-button" onClick={handleClearHistory}>
+              🗑️ Clear History
+            </button>
+            <ul className="history-list">
+              {history.length > 0 ? (
+                history.map((entry) => (
+                  <li key={entry.id}>
+                    {entry.date}
+                    <button onClick={() => handleViewReport(entry.reportUrl)}>
+                      🔍 View Report
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <p>No history available.</p>
+              )}
+            </ul>
+          </>
         )}
 
         {activeMenu === 'Settings' && (
